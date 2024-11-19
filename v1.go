@@ -1,19 +1,19 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
+
 	"github.com/kenshaw/escpos"
 )
 
-func printText(c *gin.Context, p *escpos.Escpos) {
+func printText(p *escpos.Escpos, body TextPrintPayload) {
 	p.Init()
 
 	p.SetSmooth(1)
 	p.SetFont("A")
 
-	p.Write("Hello, World!\n")
-	p.SetFont("B")
-	p.Write("Hello, World! In a new font!")
+	parsedBody := fmt.Sprintf("%s\n", body.Text)
+	p.Write(parsedBody)
 
 	p.Formfeed()
 

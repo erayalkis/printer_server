@@ -1,5 +1,5 @@
 package main
 
 type TextPrintPayload struct {
-  text string `json:"text"`
+	Text string `json:"text"`
 }

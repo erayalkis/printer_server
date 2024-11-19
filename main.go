@@ -38,9 +38,18 @@ func main() {
 	v1 := r.Group("/v1")
 
 	v1.POST("/text", func(c *gin.Context) {
-		printText(c, p)
+		var body TextPrintPayload
+
+		if err := c.ShouldBindJSON(&body); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+
+		printText(p, body)
+
 		c.JSON(http.StatusOK, gin.H{
-			"message": "done",
+			"message": "Request processed successfully",
+			"data":    body,
 		})
 	})
 
