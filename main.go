@@ -152,6 +152,8 @@ func main() {
 			return
 		}
 
+		p.LineFeed()
+
 		p.Write("Cadenzabox")
 
 		p.Write("\n")
@@ -159,11 +161,14 @@ func main() {
 
 		p.Write(fmt.Sprintf("Title: %s", body.Title))
 		p.Write("\n")
+		p.LineFeed()
 		p.Write(fmt.Sprintf("Description: %s", body.Body))
 		p.Write("\n")
+		p.LineFeed()
 		p.Write(fmt.Sprintf("Due: %s", body.Due))
 		p.Write("\n")
 		p.Write(fmt.Sprintf("Assigner: %s", body.Assigner))
+		p.LineFeed()
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Request processed successfully",
