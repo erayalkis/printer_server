@@ -40,7 +40,7 @@ func main() {
 	v1 := r.Group("/v1")
 
 	v1.POST("/text", func(c *gin.Context) {
-		var body TextPrintPayload
+r		var body TextPrintPayload
 
 		if err := c.ShouldBindJSON(&body); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
