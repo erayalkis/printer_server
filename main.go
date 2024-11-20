@@ -170,6 +170,7 @@ func main() {
 		p.Write(fmt.Sprintf("Assigner: %s", body.Assigner))
 		p.LineFeed()
 
+		p.Print()
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Request processed successfully",
 		})
