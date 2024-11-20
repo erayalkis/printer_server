@@ -234,35 +234,47 @@ func main() {
 		p.Write("\n")
 		p.Write("\n")
 
-		for _, ticket := range body.Tickets {
-			p.Bold(true).Underline(2).Write("=============TITLE=============\n")
+		for i, ticket := range body.Tickets {
+			p.Bold(true).Write("=============TITLE=============\n")
 			p.Bold(false)
-			p.Underline(0).Write(ticket.Title)
+			if len(ticket.Title) == 0 {
+				p.Underline(0).Write("N/A")
+			} else {
+				p.Underline(0).Write(ticket.Title)
+			}
 			p.Write("\n")
 			p.LineFeed()
 
-			p.Bold(true).Underline(2).Write("==========DESCRIPTION==========\n")
+			p.Bold(true).Write("==========DESCRIPTION==========\n")
 			p.Bold(false)
+			if len(ticket.Body) == 0 {
+				p.Underline(0).Write("N/A")
+			} else {
+				p.Underline(0).Write(ticket.Body)
+			}
 			p.Underline(0).Write(ticket.Body)
 			p.Write("\n")
 			p.LineFeed()
 
-			p.Bold(true).Underline(2).Write("===========DUE DATE============\n")
+			p.Bold(true).Write("===========DUE DATE============\n")
 			p.Bold(false)
-			p.Underline(0).Write(ticket.Due)
+			if len(ticket.Due) == 0 {
+				p.Underline(0).Write("N/A")
+			} else {
+				p.Underline(0).Write(ticket.Due)
+			}
 			p.Write("\n")
 			p.LineFeed()
 
-			p.Bold(true).Underline(2).Write("===========ASSIGNER============\n")
-			p.Bold(false)
-			p.Underline(0).Write(ticket.Assigner)
-			p.Write("\n")
-			p.LineFeed()
-
-			p.Bold(true).Underline(2).Write("===============================\n")
-			p.Bold(false)
-			p.Write("\n")
-			p.LineFeed()
+			if i != len(body.Tickets)-1 {
+				p.LineFeed()
+				p.Size(2, 2)
+				p.Bold(true).Write("================\n")
+				p.Bold(false)
+				p.Write("\n")
+				p.Size(1, 1)
+				p.LineFeed()
+			}
 		}
 
 		p.QRCode(body.Link, false, 5, escpos.QRCodeErrorCorrectionLevelH)
