@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"image"
+	"log"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/kenshaw/escpos"
+	"github.com/kenshaw/escpos/raster"
 )
 
 func main() {
@@ -68,24 +71,29 @@ func main() {
 		}
 		defer src.Close()
 
-		// Preprocess the image
-		bitmap, err := preprocessImage(src, 384) // Use 384px width for a 58mm printer
+		img, imgFormat, err := image.Decode(src)
+
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to process image"})
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Could not decode image"})
 			return
 		}
 
-		// Print the image
+		log.Print("Loaded image, format: ", imgFormat)
+
 		p.Init()
-		_, err = p.WriteRaw(bitmap)
-		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to send image to printer"})
-			return
+
+		p.SetAlign("center")
+
+		rasterConv := &raster.Converter{
+			MaxWidth:  348,
+			Threshold: 0.5,
 		}
+
+		rasterConv.Print(img, p)
 
 		// Cut the paper and finish
 		p.Formfeed()
-		p.Cut()
 		p.End()
 
 		// Success response
