@@ -11,3 +11,8 @@ type TicketPrintPayload struct {
 	Assigner string `json:"assigner"`
 	Link     string `json:"link"`
 }
+
+type MultiTicketPrintPaylod struct {
+	Tickets []TicketPrintPayload `json:"tickets"`
+	Link    string               `json:"link"`
+}
