@@ -5,8 +5,9 @@ type TextPrintPayload struct {
 }
 
 type TicketPrintPayload struct {
-	Title    string `json:"title`
+	Title    string `json:"title"`
 	Body     string `json:"body"`
 	Due      string `json:"due"`
 	Assigner string `json:"assigner"`
+	Link     string `json:"link"`
 }

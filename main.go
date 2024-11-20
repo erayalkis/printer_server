@@ -64,8 +64,7 @@ func main() {
 			return
 		}
 
-		p.QRCode("https://github.com/hennedo/escpos", true, 10, escpos.QRCodeErrorCorrectionLevelH)
-		p.QRCode(body.Text, true, 10, escpos.QRCodeErrorCorrectionLevelH)
+		p.QRCode(body.Text, false, 5, escpos.QRCodeErrorCorrectionLevelH)
 		p.LineFeed()
 
 		p.Print()
@@ -124,14 +123,10 @@ func main() {
 		file, err := os.Open("./cadenza_c.png")
 
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Image is required"})
-			return
-		}
-
-		if err != nil {
 			c.JSON(500, gin.H{"error": "Could not open uploaded image"})
 			return
 		}
+
 		defer file.Close()
 
 		img, imgFormat, err := image.Decode(file)
@@ -144,6 +139,7 @@ func main() {
 
 		log.Print("Loaded image, format: ", imgFormat)
 
+		p.Justify(1)
 		_, err = p.PrintImage(img)
 
 		if err != nil {
@@ -152,25 +148,44 @@ func main() {
 			return
 		}
 
+		p.Size(2, 2)
+		p.Bold(true).Write("===CADENZABOX===")
+
+		p.Size(1, 1)
+		p.Write("\n")
+		p.Write("\n")
+
+		p.Bold(true).Underline(2).Write("=============TITLE=============\n")
+		p.Bold(false)
+		p.Underline(0).Write(body.Title)
+		p.Write("\n")
 		p.LineFeed()
 
-		p.Write("Cadenzabox")
-
-		p.Write("\n")
-		p.Write("\n")
-
-		p.Write(fmt.Sprintf("Title: %s", body.Title))
+		p.Bold(true).Underline(2).Write("==========DESCRIPTION==========\n")
+		p.Bold(false)
+		p.Underline(0).Write(body.Body)
 		p.Write("\n")
 		p.LineFeed()
-		p.Write(fmt.Sprintf("Description: %s", body.Body))
+
+		p.Bold(true).Underline(2).Write("===========DUE DATE============\n")
+		p.Bold(false)
+		p.Underline(0).Write(body.Due)
 		p.Write("\n")
 		p.LineFeed()
-		p.Write(fmt.Sprintf("Due: %s", body.Due))
+
+		p.Bold(true).Underline(2).Write("===========ASSIGNER============\n")
+		p.Bold(false)
+		p.Underline(0).Write(body.Assigner)
 		p.Write("\n")
-		p.Write(fmt.Sprintf("Assigner: %s", body.Assigner))
+		p.LineFeed()
+
+		p.QRCode(body.Link, false, 5, escpos.QRCodeErrorCorrectionLevelH)
+
+		p.LineFeed()
 		p.LineFeed()
 
 		p.Print()
+
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Request processed successfully",
 		})
