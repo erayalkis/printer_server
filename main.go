@@ -40,7 +40,7 @@ func main() {
 	v1 := r.Group("/v1")
 
 	v1.POST("/text", func(c *gin.Context) {
-r		var body TextPrintPayload
+		var body TextPrintPayload
 
 		if err := c.ShouldBindJSON(&body); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
@@ -64,6 +64,7 @@ r		var body TextPrintPayload
 			return
 		}
 
+		p.QRCode("https://github.com/hennedo/escpos", true, 10, escpos.QRCodeErrorCorrectionLevelH)
 		p.QRCode(body.Text, true, 10, escpos.QRCodeErrorCorrectionLevelH)
 		p.LineFeed()
 
@@ -106,6 +107,63 @@ r		var body TextPrintPayload
 			c.JSON(500, gin.H{"error": "Could not print image"})
 			return
 		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Request processed successfully",
+		})
+	})
+
+	v1.POST("/ticket", func(c *gin.Context) {
+		var body TicketPrintPayload
+
+		if err := c.ShouldBindJSON(&body); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+
+		file, err := os.Open("./cadenza_c.png")
+
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Image is required"})
+			return
+		}
+
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Could not open uploaded image"})
+			return
+		}
+		defer file.Close()
+
+		img, imgFormat, err := image.Decode(file)
+
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Could not decode image"})
+			return
+		}
+
+		log.Print("Loaded image, format: ", imgFormat)
+
+		_, err = p.PrintImage(img)
+
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Could not print image"})
+			return
+		}
+
+		p.Write("Cadenzabox")
+
+		p.Write("\n")
+		p.Write("\n")
+
+		p.Write(fmt.Sprintf("Title: %s", body.Title))
+		p.Write("\n")
+		p.Write(fmt.Sprintf("Description: %s", body.Body))
+		p.Write("\n")
+		p.Write(fmt.Sprintf("Due: %s", body.Due))
+		p.Write("\n")
+		p.Write(fmt.Sprintf("Assigner: %s", body.Assigner))
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Request processed successfully",
