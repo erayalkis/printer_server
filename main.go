@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 	"image"
+	_ "image/png"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hennedo/escpos"
 	"github.com/joho/godotenv"
-	"github.com/kenshaw/escpos"
-	"github.com/kenshaw/escpos/raster"
 )
 
 func main() {
@@ -35,7 +35,6 @@ func main() {
 	defer f.Close()
 
 	p := escpos.New(f)
-
 	r := gin.Default()
 
 	v1 := r.Group("/v1")
@@ -48,11 +47,31 @@ func main() {
 			return
 		}
 
-		printText(p, body)
+		p.Write(body.Text)
+		p.LineFeed()
+
+		p.Print()
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Request processed successfully",
-			"data":    body,
+		})
+	})
+
+	v1.POST("/qr", func(c *gin.Context) {
+		var body TextPrintPayload
+
+		if err := c.ShouldBindJSON(&body); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+
+		p.QRCode(body.Text, true, 10, escpos.QRCodeErrorCorrectionLevelH)
+		p.LineFeed()
+
+		p.Print()
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Request processed successfully",
 		})
 	})
 
@@ -81,24 +100,17 @@ func main() {
 
 		log.Print("Loaded image, format: ", imgFormat)
 
-		p.Init()
+		_, err = p.PrintImage(img)
 
-		p.SetAlign("center")
-
-		rasterConv := &raster.Converter{
-			MaxWidth:  348,
-			Threshold: 0.5,
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Could not print image"})
+			return
 		}
 
-		rasterConv.Print(img, p)
-
-		// Cut the paper and finish
-		p.Formfeed()
-		p.End()
-
-		// Success response
-		c.JSON(200, gin.H{"message": "Image printed successfully"})
-
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Request processed successfully",
+		})
 	})
 
 	r.Run()
