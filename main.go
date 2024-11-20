@@ -53,5 +53,45 @@ func main() {
 		})
 	})
 
+	v1.POST("/image", func(c *gin.Context) {
+		file, err := c.FormFile("image")
+
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Image is required"})
+			return
+		}
+
+		src, err := file.Open()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Could not open uploaded image"})
+			return
+		}
+		defer src.Close()
+
+		// Preprocess the image
+		bitmap, err := preprocessImage(src, 384) // Use 384px width for a 58mm printer
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to process image"})
+			return
+		}
+
+		// Print the image
+		p.Init()
+		_, err = p.WriteRaw(bitmap)
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to send image to printer"})
+			return
+		}
+
+		// Cut the paper and finish
+		p.Formfeed()
+		p.Cut()
+		p.End()
+
+		// Success response
+		c.JSON(200, gin.H{"message": "Image printed successfully"})
+
+	})
+
 	r.Run()
 }
