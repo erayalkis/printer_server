@@ -41,13 +41,6 @@ func main() {
 
 	v1.POST("/text", func(c *gin.Context) {
 		var body TextPrintPayload
-		// Log raw body for debugging
-		bodyBytes, err := c.GetRawData()
-		if err != nil {
-			c.JSON(400, gin.H{"error": err.Error()})
-			return
-		}
-		fmt.Println(string(bodyBytes)) // Print the raw JSON to see what is being sent
 
 		if err := c.ShouldBindJSON(&body); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
